@@ -11,41 +11,42 @@ import kn.uni.dbis.pk2.sorting.Sorter;
  * @author Leo Woerteler &lt;leonard.woerteler@uni-konstanz.de&gt;
  */
 public class BogoSort implements Sorter {
+
+    /** Random number generator. */
+    private final Random rng = new Random();
+
     @Override
     public void sort(final DataModel model) throws InterruptedException {
-        final int[] values = model.getValues();
-        final Random rng = new Random();
+        final int n = model.getLength();
         for (;;) {
             boolean sorted = true;
-            model.addArea(0, values.length);
-            for (int i = 1; i < values.length; i++) {
-                model.changeArea(0, i, values.length);
-                model.setSpecialValue(values[i]);
-                model.pause();
-                if (values[i - 1] > values[i]) {
+            model.addArea(0, n);
+            for (int i = 1; i < n; i++) {
+                model.changeArea(0, i, n);
+                model.setSpecial(i);
+                if (model.compare(i - 1, i) > 0) {
                     sorted = false;
                     break;
                 }
             }
             model.removeArea();
-            model.setSpecialValue(-1);
+            model.setSpecial(-1);
 
             if (sorted) {
                 return;
             }
 
             model.addArea(0, 0);
-            for (int i = 1; i < values.length; i++) {
+            for (int i = 1; i < n; i++) {
                 model.changeArea(0, 0, i);
-                model.setSpecialValue(values[i]);
-                model.pause();
+                model.setSpecial(i);
                 final int j = rng.nextInt(i + 1);
                 if (j != i) {
                     model.swap(i, j);
                 }
             }
             model.removeArea();
-            model.setSpecialValue(-1);
+            model.setSpecial(-1);
         }
     }
 }

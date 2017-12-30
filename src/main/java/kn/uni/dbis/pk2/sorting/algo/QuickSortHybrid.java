@@ -32,30 +32,26 @@ public class QuickSortHybrid implements Sorter {
             InsertionSort.sort(model, start, end);
             return;
         }
-
         model.addArea(start, end);
-        final int[] array = model.getValues();
-        final int pivot = QuickSort3.medianOfThree(array[start], array[start + n / 2], array[end - 1]);
-        model.setSpecialValue(pivot);
-        int pivEnd = start;
-        int ltEnd = start;
+        model.swap(start, QuickSort3.medianOfThree(model, start, start + n / 2, end - 1));
+        model.setSpecial(start);
+        int pivEnd = start + 1;
+        int ltEnd = pivEnd;
         int gtStart = end;
         model.addArea(pivEnd, gtStart);
         for (;;) {
-            while (ltEnd < gtStart && array[gtStart - 1] > pivot) {
+            while (ltEnd < gtStart && model.compare(gtStart - 1, pivEnd - 1) > 0) {
                 gtStart--;
                 model.changeArea(0, ltEnd, gtStart);
-                model.pause();
             }
             while (ltEnd < gtStart) {
-                if (array[ltEnd] == pivot) {
+                final int cmp = model.compare(ltEnd, pivEnd - 1);
+                if (cmp == 0) {
                     model.swap(pivEnd++, ltEnd++);
                     model.changeArea(0, ltEnd, gtStart);
-                    model.pause();
-                } else if (array[ltEnd] < pivot) {
+                } else if (cmp < 0) {
                     ltEnd++;
                     model.changeArea(0, ltEnd, gtStart);
-                    model.pause();
                 } else {
                     break;
                 }
@@ -65,16 +61,14 @@ public class QuickSortHybrid implements Sorter {
             }
             model.swap(ltEnd, --gtStart);
             model.changeArea(0, ltEnd, gtStart);
-            model.pause();
         }
         model.removeArea();
 
         final int move = Math.min(pivEnd - start, ltEnd - pivEnd);
         for (int i = 0; i < move; i++) {
             model.swap(start + i, ltEnd - 1 - i);
-            model.pause();
         }
-        model.setSpecialValue(-1);
+        model.setSpecial(-1);
         sort(model, start, ltEnd - pivEnd);
         sort(model, gtStart, end - gtStart);
         model.removeArea();

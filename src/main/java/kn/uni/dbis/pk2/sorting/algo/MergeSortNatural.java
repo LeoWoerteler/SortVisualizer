@@ -12,50 +12,49 @@ public final class MergeSortNatural implements Sorter {
 
     @Override
     public void sort(final DataModel model) throws InterruptedException {
-        final int[] values = model.getValues();
-        if (values.length < 2) {
+        final int n = model.getLength();
+        if (n < 2) {
             return;
         }
+        final int[] values = model.getValues();
         final int[] copy = values.clone();
         int start = -1;
         do {
             boolean asc = true;
-            for (int end = 0; end < values.length; asc = !asc) {
+            int end = 0;
+            model.addArea(0, 0);
+            while (end < n) {
                 start = end;
-                model.addArea(start, end);
-                int curr;
                 do {
-                    model.pause();
-                    curr = values[end++];
-                    model.setSpecialValue(curr);
+                    model.setSpecial(end);
+                    end++;
                     model.changeArea(0, start, end);
-                } while (end < values.length && curr <= values[end]);
-                while (end < values.length && curr >= values[end]) {
-                    model.pause();
-                    curr = values[end++];
-                    model.setSpecialValue(curr);
+                } while (end < n && model.compare(end - 1, end) <= 0);
+                while (end < n && model.compare(end - 1, end) >= 0) {
+                    model.setSpecial(end);
+                    end++;
                     model.changeArea(0, start, end);
                 }
-                model.setSpecialValue(-1);
-                merge(model, copy, values, start, end - 1, asc);
+                model.setSpecial(-1);
+                merge(model, copy, start, end - 1, asc);
                 System.arraycopy(values, start, copy, start, end - start);
-                model.removeArea();
+                asc = !asc;
             }
-        } while (start != 0);
+            model.removeArea();
+        } while (start > 0);
     }
 
     /**
      * Merges an ascending and a descending run into one.
      *
      * @param model data model
-     * @param in array to read from
-     * @param out array to write to
+     * @param copy array to read from
      * @param lo low end
      * @param hi high end
      * @param asc flag for sorting in ascending order
      * @throws InterruptedException if the sorting thread was interrupted
      */
-    private static void merge(final DataModel model, final int[] in, final int[] out,
+    private static void merge(final DataModel model, final int[] copy,
             final int lo, final int hi, final boolean asc) throws InterruptedException {
         int k = asc ? lo : hi;
         final int c = asc ? 1 : -1;
@@ -63,17 +62,16 @@ public final class MergeSortNatural implements Sorter {
         int j = hi;
         model.addArea(lo, hi + 1);
         while (i <= j) {
-            model.pause();
-            if (in[i] <= in[j]) {
-                out[k] = in[i++];
+            if (model.compare(copy, i, j) <= 0) {
+                model.setValue(k, copy[i++]);
             } else {
-                out[k] = in[j--];
+                model.setValue(k, copy[j--]);
             }
-            model.setSpecialValue(out[k]);
+            model.setSpecial(k);
             model.changeArea(0, i, j + 1);
             k += c;
         }
         model.removeArea();
-        model.setSpecialValue(-1);
+        model.setSpecial(-1);
     }
 }

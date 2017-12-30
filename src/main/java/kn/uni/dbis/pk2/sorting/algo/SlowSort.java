@@ -12,7 +12,7 @@ public class SlowSort implements Sorter {
 
     @Override
     public void sort(final DataModel model) throws InterruptedException {
-        slowSort(model, 0, model.getValues().length);
+        slowSort(model, 0, model.getLength());
     }
 
     /**
@@ -29,18 +29,15 @@ public class SlowSort implements Sorter {
             return;
         }
         model.addArea(start, end);
-        final int[] values = model.getValues();
-        final int m = (start + end) / 2;
-        model.setSpecialValue(values[m]);
+        final int m = (start + end) >>> 1;
+        model.setSpecial(m);
         slowSort(model, start, m);
         slowSort(model, m + 1, end);
-        model.pause();
-        model.setSpecialValue(values[m]);
-        if (values[end] < values[m]) {
-            model.pause();
+        model.setSpecial(m);
+        if (model.compare(end, m) < 0) {
             model.swap(end, m);
         }
-        model.setSpecialValue(-1);
+        model.setSpecial(-1);
         slowSort(model, start, end - 1);
         model.removeArea();
     }

@@ -15,8 +15,7 @@ public final class ShellSort implements Sorter {
 
     @Override
     public void sort(final DataModel model) throws InterruptedException {
-        final int[] values = model.getValues();
-        final int n = values.length;
+        final int n = model.getLength();
         for (final int gap : GAPS) {
             for (int i = gap; i < n; i++) {
                 int k = 0;
@@ -24,21 +23,15 @@ public final class ShellSort implements Sorter {
                     model.addArea(j, j + 1);
                     k++;
                 }
-                final int temp = values[i];
-                model.setSpecialValue(temp);
-                int j = i;
-                while (j >= gap && values[j - gap] > temp) {
-                    model.pause();
-                    values[j] = values[j - gap];
-                    j -= gap;
+                model.setSpecial(i);
+                for (int j = i; j >= gap && model.compare(j - gap, j) > 0; j -= gap) {
+                    model.swap(j - gap, j);
                 }
-                model.pause();
-                values[j] = temp;
                 for (int a = 0; a < k; a++) {
                     model.removeArea();
                 }
             }
-            model.setSpecialValue(-1);
+            model.setSpecial(-1);
         }
     }
 }

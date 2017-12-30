@@ -11,6 +11,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSlider;
+import javax.swing.SwingConstants;
 
 import kn.uni.dbis.pk2.sorting.DataModel;
 import kn.uni.dbis.pk2.sorting.DataOrdering;
@@ -81,13 +82,12 @@ public final class Main {
 
         // fill an array with random values
         final Random rng = new Random();
-        final int[] array = new int[numValues];
-        DataOrdering.RANDOM.fill(array, max, rng);
         final AtomicInteger sleepTime = new AtomicInteger(50);
+        final AtomicInteger timeDistribution = new AtomicInteger(50);
         final AtomicReference<Thread> sorterThread = new AtomicReference<>();
         final AtomicReference<DataOrdering> ordering = new AtomicReference<>(DataOrdering.RANDOM);
         final AtomicReference<SortingAlgorithm> algorithm = new AtomicReference<>(SortingAlgorithm.INSERTIONSORT);
-        final DataModel model = new DataModel(array, sleepTime);
+        final DataModel model = makeModel(rng, numValues, max, ordering.get(), sleepTime, timeDistribution);
 
         // initialize the GUI
         final JFrame frame = new JFrame("Sort Algorithm Visualizer");
@@ -106,7 +106,7 @@ public final class Main {
             algoItem.setSelected(algo == algorithm.get());
             algoItem.addActionListener(l -> {
                 algorithm.set(algo);
-                final DataModel newModel = makeModel(rng, numValues, max, ordering.get(), sleepTime);
+                final DataModel newModel = makeModel(rng, numValues, max, ordering.get(), sleepTime, timeDistribution);
                 restartSorting(sorterThread, sortPanel, algo, newModel);
             });
             algos.add(algoItem);
@@ -123,7 +123,7 @@ public final class Main {
             dOrdItem.setSelected(dOrd == ordering.get());
             dOrdItem.addActionListener(l -> {
                 ordering.set(dOrd);
-                final DataModel newModel = makeModel(rng, numValues, max, dOrd, sleepTime);
+                final DataModel newModel = makeModel(rng, numValues, max, dOrd, sleepTime, timeDistribution);
                 restartSorting(sorterThread, sortPanel, algorithm.get(), newModel);
             });
             orders.add(dOrdItem);
@@ -137,6 +137,12 @@ public final class Main {
             sleepTime.set(100 - slider.getValue());
         });
         frame.add(slider, BorderLayout.SOUTH);
+        final JSlider slider2 = new JSlider(0, 100, sleepTime.get());
+        slider2.setOrientation(SwingConstants.VERTICAL);
+        slider2.addChangeListener(e -> {
+            timeDistribution.set(slider2.getValue());
+        });
+        frame.add(slider2, BorderLayout.EAST);
         frame.pack();
         frame.setResizable(true);
         frame.setVisible(true);
@@ -165,14 +171,15 @@ public final class Main {
      * @param numValues number of values to sort
      * @param max upper bound for the values
      * @param ordering data ordering
-     * @param sleepTime refernce to the sleeping time
+     * @param sleepTime reference to the sleeping time
+     * @param timeDistribution reference to the proportion between the speed of comparisons and swaps
      * @return data model
      */
     private static DataModel makeModel(final Random rng, final int numValues, final int max,
-            final DataOrdering ordering, final AtomicInteger sleepTime) {
+            final DataOrdering ordering, final AtomicInteger sleepTime, final AtomicInteger timeDistribution) {
         final int[] newArray = new int[numValues];
         ordering.fill(newArray, max, rng);
-        return new DataModel(newArray, sleepTime);
+        return new DataModel(newArray, sleepTime, timeDistribution);
     }
 
     /**

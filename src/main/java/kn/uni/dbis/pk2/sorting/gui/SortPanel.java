@@ -67,11 +67,7 @@ public class SortPanel extends JPanel {
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         synchronized (model) {
-            int[] firstArea = null;
             for (final int[] area : model.getAreas()) {
-                if (firstArea == null) {
-                    firstArea = area;
-                }
                 g2d.fill(new Rectangle2D.Double(area[0] * w, 0, (area[1] - area[0]) * w, getHeight()));
             }
 
@@ -79,9 +75,9 @@ public class SortPanel extends JPanel {
             if (special >= 0) {
                 final double top = getHeight() - (special + 1) * h;
                 g2d.fill(new Rectangle2D.Double(0, top, getWidth(), h));
-                if (firstArea != null) {
+                for (final int[] area : model.getAreas()) {
                     g2d.setColor(Color.WHITE);
-                    g2d.fill(new Rectangle2D.Double(firstArea[0] * w, top, (firstArea[1] - firstArea[0]) * w, h));
+                    g2d.fill(new Rectangle2D.Double(area[0] * w, top, (area[1] - area[0]) * w, h));
                 }
             }
 

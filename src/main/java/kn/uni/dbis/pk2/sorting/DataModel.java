@@ -13,6 +13,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DataModel {
     /** Number of milliseconds to wait between operations. */
     private final AtomicInteger sleepTime;
+    /** Distribution of wait time between comparisons and swaps. */
+    private final AtomicInteger distribution;
     /** Values to sort. */
     private final int[] values;
     /** Highlighted areas of interest. */
@@ -25,10 +27,12 @@ public class DataModel {
      *
      * @param values values to sort
      * @param sleepTime waiting time between steps of the sorting algorithm
+     * @param timeDistribution sleeping time distribution
      */
-    public DataModel(final int[] values, final AtomicInteger sleepTime) {
+    public DataModel(final int[] values, final AtomicInteger sleepTime, final AtomicInteger timeDistribution) {
         this.values = values;
         this.sleepTime = sleepTime;
+        this.distribution = timeDistribution;
     }
 
     /**
@@ -65,8 +69,18 @@ public class DataModel {
      *
      * @param newValue new highlighted value
      */
+    @Deprecated
     public synchronized void setSpecialValue(final int newValue) {
         this.specialValue = newValue;
+    }
+
+    /**
+     * Sets a new highlighted special index, {@code -1} means none.
+     *
+     * @param index index of new highlighted value
+     */
+    public synchronized void setSpecial(final int index) {
+        this.specialValue = index < 0 ? -1 : values[index];
     }
 
     /**
@@ -106,25 +120,64 @@ public class DataModel {
     }
 
     /**
+     * Compares two values.
+     *
+     * @param i index of the first value
+     * @param j index of the second value
+     * @return see {@link Integer#compare(int, int)}
+     * @throws InterruptedException if the thread was interrupted
+     */
+    public int compare(final int i, final int j) throws InterruptedException {
+        return compare(values, i, j);
+    }
+
+    /**
+     * Compares two values in the given array.
+     *
+     * @param array the array
+     * @param i index of the first value
+     * @param j index of the second value
+     * @return see {@link Integer#compare(int, int)}
+     * @throws InterruptedException if the thread was interrupted
+     */
+    public int compare(final int[] array, final int i, final int j) throws InterruptedException {
+        pause(false);
+        return Integer.compare(array[i], array[j]);
+    }
+
+    /**
      * Swaps the values at positions {@code i} and {@code j}.
+     *
      * @param i index of the first value to swap
      * @param j index of the second value to swap
+     * @throws InterruptedException if the thread was interrupted
      */
-    public synchronized void swap(final int i, final int j) {
-        final int temp = values[i];
-        values[i] = values[j];
-        values[j] = temp;
+    public synchronized void swap(final int i, final int j) throws InterruptedException {
+        if (i != j) {
+            final int temp = values[i];
+            values[i] = values[j];
+            values[j] = temp;
+            pause(true);
+        }
     }
 
     /**
      * Pauses the sorting algorithm.
      *
+     * @param swap pause for a swap instead of a comparison
      * @throws InterruptedException if the thread was interrupted
      */
-    public void pause() throws InterruptedException {
+    public void pause(final boolean swap) throws InterruptedException {
         checkStop();
-        final long millis = (long) Math.ceil(Math.exp(this.sleepTime.get() / 13.155)) - 1;
-        Thread.sleep(millis);
+        final double millis = Math.ceil(Math.exp(this.sleepTime.get() / 13.155)) - 1;
+        final int comp = distribution.get();
+        final double factor;
+        if (swap) {
+            factor = comp <= 50 ? 1 : (100.0 - comp) / comp;
+        } else {
+            factor = comp >= 50 ? 1 : comp / (100.0 - comp);
+        }
+        Thread.sleep((long) Math.round(factor * millis));
     }
 
     /**
@@ -136,5 +189,17 @@ public class DataModel {
         if (Thread.interrupted()) {
             throw new InterruptedException();
         }
+    }
+
+    /**
+     * Sets a value in this data model.
+     *
+     * @param pos position of the value to set
+     * @param value new value
+     * @throws InterruptedException if the sorting thread was interrupted
+     */
+    public void setValue(final int pos, final int value) throws InterruptedException {
+        values[pos] = value;
+        pause(true);
     }
 }

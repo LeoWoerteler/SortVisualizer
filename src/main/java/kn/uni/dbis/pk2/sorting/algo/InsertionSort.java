@@ -24,16 +24,14 @@ public final class InsertionSort implements Sorter {
      */
     static void sort(final DataModel model, final int start, final int end) throws InterruptedException {
         model.addArea(start, end);
-        final int[] array = model.getValues();
         for (int i = start + 1; i < end; i++) {
             model.changeArea(0, i, end);
-            model.setSpecialValue(array[i]);
-            for (int j = i; j > 0 && array[j - 1] > array[j]; j--) {
-                model.pause();
+            model.setSpecial(i);
+            for (int j = i; j > 0 && model.compare(j - 1, j) > 0; j--) {
                 model.swap(j - 1, j);
             }
         }
-        model.setSpecialValue(-1);
+        model.setSpecial(-1);
         model.removeArea();
     }
 }

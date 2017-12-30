@@ -24,20 +24,18 @@ public final class MergeSortNaturalIterative implements Sorter {
         while (from < n) {
             int to = from + 1;
             model.addArea(from, to);
-            while (to < n && values[to] >= values[to - 1]) {
-                model.setSpecialValue(values[to]);
-                model.pause();
+            while (to < n && model.compare(to, to - 1) >= 0) {
+                model.setSpecial(to);
                 to++;
                 model.changeArea(0, from, to);
             }
             int mid = to;
-            while (to < n && values[to] <= values[to - 1]) {
-                model.setSpecialValue(values[to]);
-                model.pause();
+            while (to < n && model.compare(to, to - 1) <= 0) {
+                model.setSpecial(to);
                 to++;
                 model.changeArea(0, from, to);
             }
-            model.setSpecialValue(-1);
+            model.setSpecial(-1);
 
             int level = 0;
             int off = from;
@@ -94,7 +92,6 @@ public final class MergeSortNaturalIterative implements Sorter {
     private static void merge(final DataModel model, final int[] copy,
             final int a0, final int a1, final int b0, final int b1,
             final boolean descOut) throws InterruptedException {
-        final int[] values = model.getValues();
         final int add = descOut ? -1 : 1;
         final int addI = a0 < a1 ? 1 : -1;
         final int addJ = b0 < b1 ? 1 : -1;
@@ -107,20 +104,19 @@ public final class MergeSortNaturalIterative implements Sorter {
         int j = b0;
         int o = descOut ? j : i;
         while (i != a1 || j != b1) {
-            model.pause();
-            if (j == b1 || i != a1 && copy[i] <= copy[j]) {
-                values[o] = copy[i];
+            if (j == b1 || i != a1 && model.compare(copy, i, j) <= 0) {
+                model.setValue(o, copy[i]);
                 i += addI;
             } else {
-                values[o] = copy[j];
+                model.setValue(o, copy[j]);
                 j += addJ;
             }
-            model.setSpecialValue(values[o]);
+            model.setSpecial(o);
             changeArea(model, 1, i, lastA);
             changeArea(model, 0, j, lastB);
             o += add;
         }
-        model.setSpecialValue(-1);
+        model.setSpecial(-1);
         model.removeArea();
         model.removeArea();
     }

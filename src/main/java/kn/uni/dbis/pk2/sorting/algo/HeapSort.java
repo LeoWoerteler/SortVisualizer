@@ -12,8 +12,7 @@ public final class HeapSort implements Sorter {
 
     @Override
     public void sort(final DataModel model) throws InterruptedException {
-        final int[] values = model.getValues();
-        final int n = values.length;
+        final int n = model.getLength();
         final int lastParent = (n - 1) / 2;
         for (int i = lastParent; i >= 0; i--) {
             model.addArea(i, n);
@@ -22,13 +21,12 @@ public final class HeapSort implements Sorter {
         }
         for (int i = n; --i > 0;) {
             model.addArea(0, i);
-            model.setSpecialValue(values[i]);
+            model.setSpecial(i);
             model.swap(i, 0);
-            model.pause();
             siftDown(model, 0, i);
             model.removeArea();
         }
-        model.setSpecialValue(-1);
+        model.setSpecial(-1);
     }
 
     /**
@@ -41,21 +39,19 @@ public final class HeapSort implements Sorter {
      */
     private static void siftDown(final DataModel model, final int start, final int end)
             throws InterruptedException {
-        final int[] values = model.getValues();
         int pos = start;
         while (2 * pos < end - 1) {
             final int left = 2 * pos + 1;
-            final int child = left + 1 == end || values[left] >= values[left + 1] ? left : left + 1;
-            if (values[pos] >= values[child]) {
+            final int child = left + 1 == end || model.compare(left, left + 1) >= 0 ? left : left + 1;
+            if (model.compare(pos, child) >= 0) {
                 break;
             }
             model.addArea(pos, end);
-            model.setSpecialValue(values[pos]);
+            model.setSpecial(pos);
             model.swap(pos, child);
-            model.pause();
             pos = child;
             model.removeArea();
         }
-        model.setSpecialValue(-1);
+        model.setSpecial(-1);
     }
 }

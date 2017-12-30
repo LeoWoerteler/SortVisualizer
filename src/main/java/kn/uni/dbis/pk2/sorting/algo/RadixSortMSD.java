@@ -50,8 +50,8 @@ public class RadixSortMSD implements Sorter {
         int r = end;
         model.addArea(l, r);
         while (l < r) {
-            model.setSpecialValue(values[l]);
-            model.pause();
+            model.setSpecial(l);
+            model.pause(false);
             if ((values[l] & mask) == 0) {
                 l++;
             } else {
@@ -59,7 +59,7 @@ public class RadixSortMSD implements Sorter {
             }
             model.changeArea(0, l, r);
         }
-        model.setSpecialValue(-1);
+        model.setSpecial(-1);
         model.removeArea();
         final int lowerMask = mask >>> 1;
         if (lowerMask != 0) {

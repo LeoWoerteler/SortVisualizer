@@ -26,35 +26,30 @@ public class QuickSortNaive implements Sorter {
         if (end - start < 2) {
             return;
         }
+
         model.addArea(start, end);
-        final int[] array = model.getValues();
-        final int pivot = array[start];
-        model.setSpecialValue(pivot);
+        model.setSpecial(start);
         int l = start + 1;
         int r = end - 1;
         model.addArea(l, r + 1);
         for (;;) {
-            while (l <= r && array[l] <= pivot) {
+            while (l <= r && model.compare(l, start) <= 0) {
                 l++;
                 model.changeArea(0, l, r + 1);
-                model.pause();
             }
-            while (l <= r && array[r] > pivot) {
+            while (l <= r && model.compare(r, start) > 0) {
                 r--;
                 model.changeArea(0, l, r + 1);
-                model.pause();
             }
             if (l > r) {
                 break;
             }
             model.swap(l++, r--);
             model.changeArea(0, l, r + 1);
-            model.pause();
         }
         model.swap(start, r);
         model.removeArea();
-        model.setSpecialValue(-1);
-        model.pause();
+        model.setSpecial(-1);
         sort(model, start, r);
         sort(model, l, end);
         model.removeArea();

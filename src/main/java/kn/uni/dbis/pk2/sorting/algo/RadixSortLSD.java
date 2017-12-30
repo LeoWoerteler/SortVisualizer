@@ -44,21 +44,22 @@ public class RadixSortLSD implements Sorter {
             model.addArea(m, m);
             for (int i = 0; i < n; i++) {
                 model.changeArea(2, i, i + 1);
-                model.setSpecialValue(copy[i]);
                 if ((copy[i] & mask) == 0) {
                     values[z++] = copy[i];
+                    model.setSpecial(z - 1);
                     model.changeArea(1, 0, z);
                 } else {
                     values[o++] = copy[i];
+                    model.setSpecial(o - 1);
                     model.changeArea(0, m, o);
                 }
-                model.pause();
+                model.pause(true);
             }
             System.arraycopy(values, 0, copy, 0, n);
             model.removeArea();
             model.removeArea();
             model.removeArea();
-            model.setSpecialValue(-1);
+            model.setSpecial(-1);
         }
     }
 }

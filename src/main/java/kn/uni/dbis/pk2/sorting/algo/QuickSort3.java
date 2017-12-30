@@ -29,54 +29,55 @@ public class QuickSort3 implements Sorter {
         }
 
         model.addArea(start, end);
-        final int[] array = model.getValues();
-        final int pivot = medianOfThree(array[start], array[(start + end) / 2], array[end - 1]);
-        model.setSpecialValue(pivot);
+        model.swap(start, medianOfThree(model, start, start + (end - start) >>> 1, end - 1));
+        model.setSpecial(start);
         int l = start;
-        int m = start;
+        int m = start + 1;
         int r = end;
         model.addArea(m, r);
         for (;;) {
-            while (m < r && array[r - 1] > pivot) {
+            while (m < r && model.compare(r - 1, m - 1) > 0) {
                 r--;
                 model.changeArea(0, m, r);
-                model.pause();
             }
             while (m < r) {
-                if (array[m] < pivot) {
+                final int cmp = model.compare(m, m - 1);
+                if (cmp < 0) {
                     model.swap(l++, m++);
-                } else if (array[m] == pivot) {
+                } else if (cmp == 0) {
                     m++;
                 } else {
                     break;
                 }
                 model.changeArea(0, m, r);
-                model.pause();
             }
             if (m >= r) {
                 break;
             }
             model.swap(m, --r);
             model.changeArea(0, m, r);
-            model.pause();
         }
         model.removeArea();
-        model.setSpecialValue(-1);
+        model.setSpecial(-1);
         sort(model, start, l);
         sort(model, r, end);
         model.removeArea();
     }
 
     /**
-     * Computes the middle value out of three values.
+     * Computes the middle value out of three values in the given data model.
      *
-     * @param a first value to compare
-     * @param b second value to compare
-     * @param c third value to compare
-     * @return median of the three given values
+     * @param model data model
+     * @param a first index to compare
+     * @param b second index to compare
+     * @param c third index to compare
+     * @return index of the median of the three given values
+     * @throws InterruptedException if the sorting thread was interrupted
      */
-    static final int medianOfThree(final int a, final int b, final int c) {
-        return a < b ? (b < c ? b : (c < a ? a : c))
-                     : (c < b ? b : (c > a ? a : c));
+    static final int medianOfThree(final DataModel model, final int a, final int b, final int c)
+            throws InterruptedException {
+        return model.compare(a, b) < 0
+                ? (model.compare(b, c) < 0 ? b : (model.compare(c, a) < 0 ? a : c))
+                : (model.compare(b, c) > 0 ? b : (model.compare(c, a) > 0 ? a : c));
     }
 }

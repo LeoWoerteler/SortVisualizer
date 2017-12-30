@@ -23,7 +23,7 @@ public class SmoothSort implements Sorter {
 
     @Override
     public void sort(final DataModel model) throws InterruptedException {
-        if (model.getValues().length < 2) {
+        if (model.getLength() < 2) {
             return;
         }
         final BitSet sizes = buildHeaps(model);
@@ -42,7 +42,7 @@ public class SmoothSort implements Sorter {
         sizes.set(1);
         model.addArea(0, 2);
         int minSize = 1;
-        for (int curr = 1, n = model.getValues().length; curr < n; curr++) {
+        for (int curr = 1, n = model.getLength(); curr < n; curr++) {
             if (sizes.get(minSize + 1)) {
                 // build a heap from the two previous heaps and the current element
                 sizes.clear(minSize, minSize + 2);
@@ -71,7 +71,7 @@ public class SmoothSort implements Sorter {
      */
     private static void sort(final DataModel model, final BitSet sizes) throws InterruptedException {
         int min = sizes.nextSetBit(0);
-        for (int i = model.getValues().length; --i > 0;) {
+        for (int i = model.getLength(); --i > 0;) {
             sizes.clear(min);
             model.removeArea();
             if (min < 2) {
@@ -101,10 +101,7 @@ public class SmoothSort implements Sorter {
      */
     private static void restoreHeaps(final DataModel model, final BitSet sizes, final int initSizeL, final int initPos)
             throws InterruptedException {
-        final int[] values = model.getValues();
-        final int currVal = values[initPos];
-        model.setSpecialValue(currVal);
-
+        model.setSpecial(initPos);
         int pos = initPos;
         int sizeL = initSizeL;
         for (;;) {
@@ -115,25 +112,20 @@ public class SmoothSort implements Sorter {
             }
             final int size = L[sizeL];
             final int nextHead = pos - size;
-            final int nextVal = values[nextHead];
             final int rightHead = pos - 1;
-            if (nextVal <= currVal
-                    || size > 1 && (nextVal < values[rightHead] || nextVal < values[rightHead - L[sizeL - 2]])) {
+            if (model.compare(nextHead, pos) <= 0
+                    || size > 1 && (model.compare(nextHead, rightHead) < 0
+                            || model.compare(nextHead, rightHead - L[sizeL - 2]) < 0)) {
                 // we have found the correct heap
                 break;
             }
-            values[pos] = nextVal;
+            model.swap(pos, nextHead);
             pos = nextHead;
             sizeL = nextL;
-            model.pause();
         }
 
-        pos = siftDown(model, sizeL, pos, currVal);
-        if (pos != initPos) {
-            model.pause();
-            values[pos] = currVal;
-        }
-        model.setSpecialValue(-1);
+        siftDown(model, sizeL, pos);
+        model.setSpecial(-1);
     }
 
     /**
@@ -142,36 +134,33 @@ public class SmoothSort implements Sorter {
      * @param model data model
      * @param initL index of the heap's size
      * @param headPos position of the heap's head
-     * @param currVal value to sift in
-     * @return final position of the value
      * @throws InterruptedException if the sorting thread was interrupted
      */
-    private static int siftDown(final DataModel model, final int initL, final int headPos, final int currVal)
+    private static void siftDown(final DataModel model, final int initL, final int headPos)
             throws InterruptedException {
         // sink the current value into its heap
-        final int[] values = model.getValues();
         int sizeL = initL;
         int pos = headPos;
         while (sizeL > 1) {
-            final int rightHead = pos - 1;
-            final int leftHead = rightHead - L[sizeL - 2];
-            if (values[leftHead] <= values[rightHead]) {
-                if (currVal >= values[rightHead]) {
+            final int right = pos - 1;
+            final int left = right - L[sizeL - 2];
+            if (model.compare(left, right) <= 0) {
+                // right child is bigger
+                if (model.compare(pos, right) >= 0) {
                     break;
                 }
-                values[pos] = values[rightHead];
+                model.swap(pos, right);
                 sizeL -= 2;
-                pos = rightHead;
+                pos = right;
             } else {
-                if (currVal >= values[leftHead]) {
+                // left child is bigger
+                if (model.compare(pos, left) >= 0) {
                     break;
                 }
-                values[pos] = values[leftHead];
+                model.swap(pos, left);
                 sizeL -= 1;
-                pos = leftHead;
+                pos = left;
             }
-            model.pause();
         }
-        return pos;
     }
 }

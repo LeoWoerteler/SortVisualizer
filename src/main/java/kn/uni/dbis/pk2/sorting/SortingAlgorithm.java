@@ -9,6 +9,7 @@ import kn.uni.dbis.pk2.sorting.algo.InsertionSort;
 import kn.uni.dbis.pk2.sorting.algo.MergeSort;
 import kn.uni.dbis.pk2.sorting.algo.MergeSortNatural;
 import kn.uni.dbis.pk2.sorting.algo.MergeSortNaturalIterative;
+import kn.uni.dbis.pk2.sorting.algo.MergeSortNaturalIterative2;
 import kn.uni.dbis.pk2.sorting.algo.QuickSort3;
 import kn.uni.dbis.pk2.sorting.algo.QuickSortHybrid;
 import kn.uni.dbis.pk2.sorting.algo.QuickSortNaive;
@@ -65,7 +66,10 @@ public enum SortingAlgorithm {
     MERGESORT_NATURAL("Natural Merge Sort", MergeSortNatural::new, false),
 
     /** The Merge Sort algorithm. */
-    MERGESORT_NATURAL_ITER("Iterative Natural Merge Sort", MergeSortNaturalIterative::new, true),
+    MERGESORT_NATURAL_ITER("Iterative Natural Merge Sort", MergeSortNaturalIterative::new, false),
+
+    /** The Merge Sort algorithm. */
+    MERGESORT_NATURAL_ITER2("Iterative Natural Merge Sort (2)", MergeSortNaturalIterative2::new, true),
 
     /** The Heap Sort algorithm. */
     HEAPSORT("Heap Sort", HeapSort::new, false),
