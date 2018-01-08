@@ -82,6 +82,16 @@ public class SortPanel extends JPanel {
             }
 
             final int[] values = model.getValues();
+            if (model.hasCopy()) {
+                final int[] copy = model.getCopy();
+                for (int i = 0; i < copy.length; i++) {
+                    if (copy[i] != values[i]) {
+                        g2d.setColor(copy[i] == special ? Color.RED : Color.GREEN);
+                        g2d.fill(new Rectangle2D.Double(i * w, getHeight() - (copy[i] + 1) * h, w, h));
+                    }
+                }
+            }
+
             for (int i = 0; i < values.length; i++) {
                 g2d.setColor(values[i] == special ? Color.RED : Color.BLUE);
                 g2d.fill(new Rectangle2D.Double(i * w, getHeight() - (values[i] + 1) * h, w, h));

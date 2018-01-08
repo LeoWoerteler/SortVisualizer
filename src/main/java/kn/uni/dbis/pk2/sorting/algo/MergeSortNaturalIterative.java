@@ -1,5 +1,7 @@
 package kn.uni.dbis.pk2.sorting.algo;
 
+import java.util.Arrays;
+
 import kn.uni.dbis.pk2.sorting.DataModel;
 import kn.uni.dbis.pk2.sorting.Sorter;
 
@@ -17,10 +19,11 @@ public final class MergeSortNaturalIterative implements Sorter {
             return;
         }
         final int[] values = model.getValues();
-        final int[] copy = values.clone();
-        final int[] levels = new int[32 - Integer.numberOfLeadingZeros(n - 1)];
-        int maxLevel = 0;
+        final int[] copy = model.createCopy();
+        Arrays.fill(copy, -1);
+        final int[] sizes = new int[32 - Integer.numberOfLeadingZeros(n - 1)];
         int from = 0;
+        int runs = 0;
         while (from < n) {
             int to = from + 1;
             model.addArea(from, to);
@@ -36,42 +39,67 @@ public final class MergeSortNaturalIterative implements Sorter {
                 model.changeArea(0, from, to);
             }
             model.setSpecial(-1);
+            runs++;
 
             int level = 0;
             int off = from;
-            while (levels[level] != 0) {
-                final int size = levels[level];
-                merge(model, copy, off, mid, to - 1, mid - 1, true);
-                System.arraycopy(values, off, copy, off, to - off);
-                levels[level] = 0;
+            int[] in = values;
+            int[] out = copy;
+            while (sizes[level] != 0) {
+                final int size = sizes[level];
+                merge(model, level % 2 == 0, off, mid, to - 1, mid - 1, true);
+                sizes[level] = 0;
                 mid = off;
                 off -= size;
                 model.changeArea(0, off, to);
                 level++;
+                final int[] temp = in;
+                in = out;
+                out = temp;
             }
-            merge(model, copy, off, mid, to - 1, mid - 1, false);
-            System.arraycopy(values, off, copy, off, to - off);
-            levels[level] = to - off;
-            maxLevel = Math.max(maxLevel, level);
+            merge(model, level % 2 == 0, off, mid, to - 1, mid - 1, false);
+            sizes[level] = to - off;
             model.removeArea();
             from = to;
         }
 
+        final int maxLevel = 31 - Integer.numberOfLeadingZeros(runs);
         int mid = -1;
         model.addArea(n, n);
+        boolean lastOnCopy = true;
         for (int l = 0; l <= maxLevel; l++) {
-            if (levels[l] > 0) {
+            if (sizes[l] > 0) {
+                boolean onCopy = l % 2 == 0;
                 if (mid == -1) {
-                    mid = n - levels[l];
+                    mid = n - sizes[l];
                     model.changeArea(0, mid, n);
+                    lastOnCopy = onCopy;
                 } else {
-                    final int off = mid - levels[l];
+                    final int off = mid - sizes[l];
                     model.changeArea(0, off, n);
-                    merge(model, copy, off, mid, mid, n, false);
-                    System.arraycopy(values, off, copy, off, n - off);
+                    int[] in = onCopy ? copy : values;
+                    int[] out = onCopy ? values : copy;
+                    if (lastOnCopy != onCopy) {
+                        final int oldSize = n - mid;
+                        final int newSize = sizes[l];
+                        if (oldSize > newSize) {
+                            MergeSortNatural.move(model, in, out, off, mid);
+                            onCopy = lastOnCopy;
+                            final int[] temp = in;
+                            in = out;
+                            out = temp;
+                        } else {
+                            MergeSortNatural.move(model, out, in, mid, n);
+                        }
+                    }
+                    merge(model, out == copy, off, mid, mid, n, false);
                     mid = off;
+                    lastOnCopy = !onCopy;
                 }
             }
+        }
+        if (lastOnCopy) {
+            MergeSortNatural.move(model, copy, values, 0, n);
         }
         model.removeArea();
     }
@@ -81,7 +109,7 @@ public final class MergeSortNaturalIterative implements Sorter {
      * can be ascending or descending.
      *
      * @param model data model
-     * @param copy copy to read from
+     * @param toCopy flag indicating if the output should be written to the copy
      * @param a0 start of the first run
      * @param a1 end of the first run
      * @param b0 start of the second run
@@ -89,7 +117,7 @@ public final class MergeSortNaturalIterative implements Sorter {
      * @param descOut flag for making the output run descending
      * @throws InterruptedException if the sorting thread was interrupted
      */
-    private static void merge(final DataModel model, final int[] copy,
+    static void merge(final DataModel model, final boolean toCopy,
             final int a0, final int a1, final int b0, final int b1,
             final boolean descOut) throws InterruptedException {
         final int add = descOut ? -1 : 1;
@@ -100,20 +128,26 @@ public final class MergeSortNaturalIterative implements Sorter {
         model.addArea(Math.min(a0, lastA), Math.max(a0, lastA) + 1);
         model.addArea(Math.min(b0, lastB), Math.max(b0, lastB) + 1);
 
+        final int[] in = toCopy ? model.getValues() : model.getCopy();
+        final int[] out = toCopy ? model.getCopy() : model.getValues();
         int i = a0;
         int j = b0;
         int o = descOut ? j : i;
         while (i != a1 || j != b1) {
-            if (j == b1 || i != a1 && model.compare(copy, i, j) <= 0) {
-                model.setValue(o, copy[i]);
+            final int pos;
+            if (j == b1 || i != a1 && model.compare(in, i, j) <= 0) {
+                pos = i;
                 i += addI;
             } else {
-                model.setValue(o, copy[j]);
+                pos = j;
                 j += addJ;
             }
-            model.setSpecial(o);
+            final int val = in[pos];
+            in[pos] = -1;
+            model.setSpecialValue(val);
             changeArea(model, 1, i, lastA);
             changeArea(model, 0, j, lastB);
+            model.setValue(out, o, val);
             o += add;
         }
         model.setSpecial(-1);

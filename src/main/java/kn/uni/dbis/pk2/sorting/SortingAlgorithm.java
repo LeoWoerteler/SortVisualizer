@@ -4,14 +4,15 @@ import java.util.function.Supplier;
 
 import kn.uni.dbis.pk2.sorting.algo.BogoSort;
 import kn.uni.dbis.pk2.sorting.algo.BubbleSort;
+import kn.uni.dbis.pk2.sorting.algo.CombSort;
 import kn.uni.dbis.pk2.sorting.algo.HeapSort;
 import kn.uni.dbis.pk2.sorting.algo.InsertionSort;
 import kn.uni.dbis.pk2.sorting.algo.MergeSort;
 import kn.uni.dbis.pk2.sorting.algo.MergeSortNatural;
-import kn.uni.dbis.pk2.sorting.algo.MergeSortNaturalIterative;
-import kn.uni.dbis.pk2.sorting.algo.MergeSortNaturalIterative2;
+import kn.uni.dbis.pk2.sorting.algo.MergeSortNaturalExtendedRuns;
 import kn.uni.dbis.pk2.sorting.algo.QuickSort3;
 import kn.uni.dbis.pk2.sorting.algo.QuickSortHybrid;
+import kn.uni.dbis.pk2.sorting.algo.QuickSortMedOfMed;
 import kn.uni.dbis.pk2.sorting.algo.QuickSortNaive;
 import kn.uni.dbis.pk2.sorting.algo.QuickSortRandom;
 import kn.uni.dbis.pk2.sorting.algo.RadixSortLSD;
@@ -39,16 +40,22 @@ public enum SortingAlgorithm {
     SHAKERSORT("Shaker Sort", ShakerSort::new, false),
 
     /** Variant of the Shaker Sort algorithm which moves blocks of equal values. */
-    SHAKERSORT_OPT("Shaker Sort (opt. for duplicates)", ShakerSortDupl::new, true),
+    SHAKERSORT_OPT("Shaker Sort (opt. for duplicates)", ShakerSortDupl::new, false),
+
+    /** The Comb Sort algorithm. */
+    COMBSORT("Comb Sort", CombSort::new, true),
 
     /** The Insertion Sort algorithm. */
-    INSERTIONSORT("Insertion Sort", InsertionSort::new, true),
+    INSERTIONSORT("Insertion Sort", InsertionSort::new, false),
 
     /** The Insertion Sort algorithm. */
     SHELLSORT("Shell Sort", ShellSort::new, true),
 
     /** The naive Quick Sort algorithm. */
-    QUICKSORT_NAIVE("Quick Sort (naïve)", QuickSortNaive::new, false),
+    QUICKSORT_NAIVE("Quick Sort", QuickSortNaive::new, false),
+
+    /** The Quick Sort algorithm. */
+    QUICKSORT_LOG("Quick Sort (log space)", QuickSortRandom::new, false),
 
     /** The Quick Sort algorithm. */
     QUICKSORT_RANDOM("Quick Sort (random pivot)", QuickSortRandom::new, false),
@@ -57,19 +64,19 @@ public enum SortingAlgorithm {
     QUICKSORT("Quick Sort (median of 3)", QuickSort3::new, false),
 
     /** The Quick Sort algorithm. */
-    QUICKSORT_INSERT("Quick Sort (falls back to insertion)", QuickSortHybrid::new, true),
+    QUICKSORT_INSERT("Quick Sort (falls back to insertion)", QuickSortHybrid::new, false),
+
+    /** The Quick Sort algorithm. */
+    QUICKSORT_MEDMED("Quick Sort (median of medians)", QuickSortMedOfMed::new, true),
 
     /** The Merge Sort algorithm. */
     MERGESORT("Merge Sort", MergeSort::new, false),
 
     /** The Merge Sort algorithm. */
-    MERGESORT_NATURAL("Natural Merge Sort", MergeSortNatural::new, false),
+    MERGESORT_NATURAL("Natural Merge Sort (up/down)", MergeSortNatural::new, false),
 
     /** The Merge Sort algorithm. */
-    MERGESORT_NATURAL_ITER("Iterative Natural Merge Sort", MergeSortNaturalIterative::new, false),
-
-    /** The Merge Sort algorithm. */
-    MERGESORT_NATURAL_ITER2("Iterative Natural Merge Sort (2)", MergeSortNaturalIterative2::new, true),
+    MERGESORT_NATURAL2("Natural Merge Sort (extends runs)", MergeSortNaturalExtendedRuns::new, true),
 
     /** The Heap Sort algorithm. */
     HEAPSORT("Heap Sort", HeapSort::new, false),

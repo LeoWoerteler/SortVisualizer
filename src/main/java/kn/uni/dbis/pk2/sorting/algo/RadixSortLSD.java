@@ -1,5 +1,7 @@
 package kn.uni.dbis.pk2.sorting.algo;
 
+import java.util.Arrays;
+
 import kn.uni.dbis.pk2.sorting.DataModel;
 import kn.uni.dbis.pk2.sorting.Sorter;
 
@@ -27,14 +29,24 @@ public class RadixSortLSD implements Sorter {
             return;
         }
 
-        final int[] copy = values.clone();
         final int changingBits = 32 - Integer.numberOfLeadingZeros(~(ones | zeroes));
+        int[] in;
+        int[] out;
+        if (changingBits % 2 == 0) {
+            in = values;
+            out = model.createCopy();
+        } else {
+            in = model.createCopy();
+            out = values;
+        }
+        Arrays.fill(out, -1);
+
         for (int bit = 0; bit < changingBits; bit++) {
             final int mask = 1 << bit;
             int z = 0;
             int o = 0;
             for (int i = 0; i < n; i++) {
-                if ((copy[i] & mask) == 0) {
+                if ((in[i] & mask) == 0) {
                     o++;
                 }
             }
@@ -44,22 +56,27 @@ public class RadixSortLSD implements Sorter {
             model.addArea(m, m);
             for (int i = 0; i < n; i++) {
                 model.changeArea(2, i, i + 1);
-                if ((copy[i] & mask) == 0) {
-                    values[z++] = copy[i];
-                    model.setSpecial(z - 1);
+                final int val = in[i];
+                in[i] = -1;
+                final int pos;
+                if ((val & mask) == 0) {
+                    pos = z++;
                     model.changeArea(1, 0, z);
                 } else {
-                    values[o++] = copy[i];
-                    model.setSpecial(o - 1);
+                    pos = o++;
                     model.changeArea(0, m, o);
                 }
-                model.pause(true);
+                model.setSpecialValue(val);
+                model.setValue(out, pos, val);
             }
-            System.arraycopy(values, 0, copy, 0, n);
             model.removeArea();
             model.removeArea();
             model.removeArea();
             model.setSpecial(-1);
+            final int [] temp = in;
+            in = out;
+            out = temp;
         }
+        model.destroyCopy();
     }
 }

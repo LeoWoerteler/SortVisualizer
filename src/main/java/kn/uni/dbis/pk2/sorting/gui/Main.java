@@ -90,7 +90,7 @@ public final class Main {
         final DataModel model = makeModel(rng, numValues, max, ordering.get(), sleepTime, timeDistribution);
 
         // initialize the GUI
-        final JFrame frame = new JFrame("Sort Algorithm Visualizer");
+        final JFrame frame = new JFrame(makeTitle(algorithm.get(), ordering.get()));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         final SortPanel sortPanel = new SortPanel(model, max);
         frame.add(sortPanel, BorderLayout.CENTER);
@@ -106,6 +106,7 @@ public final class Main {
             algoItem.setSelected(algo == algorithm.get());
             algoItem.addActionListener(l -> {
                 algorithm.set(algo);
+                frame.setTitle(makeTitle(algo, ordering.get()));
                 final DataModel newModel = makeModel(rng, numValues, max, ordering.get(), sleepTime, timeDistribution);
                 restartSorting(sorterThread, sortPanel, algo, newModel);
             });
@@ -123,6 +124,7 @@ public final class Main {
             dOrdItem.setSelected(dOrd == ordering.get());
             dOrdItem.addActionListener(l -> {
                 ordering.set(dOrd);
+                frame.setTitle(makeTitle(algorithm.get(), dOrd));
                 final DataModel newModel = makeModel(rng, numValues, max, dOrd, sleepTime, timeDistribution);
                 restartSorting(sorterThread, sortPanel, algorithm.get(), newModel);
             });
@@ -148,7 +150,7 @@ public final class Main {
         frame.setVisible(true);
 
         // start the sorting process
-        setSorterThread(sorterThread, algorithm.get().newInstance(), model);
+        setSorterThread(sorterThread, algorithm.get(), model);
 
         while (!Thread.interrupted()) {
             try {
@@ -197,18 +199,30 @@ public final class Main {
             old.interrupt();
         }
         sortPanel.changeDataModel(newModel);
-        setSorterThread(sorterThread, algo.newInstance(), newModel);
+        setSorterThread(sorterThread, algo, newModel);
+    }
+
+    /**
+     * Returns a window title.
+     *
+     * @param algo sorting algorithm
+     * @param ordering data ordering
+     * @return window title
+     */
+    static String makeTitle(final SortingAlgorithm algo, final DataOrdering ordering) {
+        return "Sort Algorithm Visualizer  —  " + algo + "  vs.  " + ordering;
     }
 
     /**
      * Sets a new sorter thread.
      *
      * @param sorterThread reference to the current sorter thread
-     * @param sorter ne wsorter to use
+     * @param algo new sorting algorithm to use
      * @param model data model to sort
      */
     private static void setSorterThread(final AtomicReference<Thread> sorterThread,
-            final Sorter sorter, final DataModel model) {
+            final SortingAlgorithm algo, final DataModel model) {
+        final Sorter sorter = algo.newInstance();
         final Thread thread = new Thread() {
             @Override
             public void run() {

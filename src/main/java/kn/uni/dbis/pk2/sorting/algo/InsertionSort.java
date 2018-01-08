@@ -25,9 +25,9 @@ public final class InsertionSort implements Sorter {
     static void sort(final DataModel model, final int start, final int end) throws InterruptedException {
         model.addArea(start, end);
         for (int i = start + 1; i < end; i++) {
-            model.changeArea(0, i, end);
+            model.changeArea(0, i + 1, end);
             model.setSpecial(i);
-            for (int j = i; j > 0 && model.compare(j - 1, j) > 0; j--) {
+            for (int j = i; j > start && model.compare(j - 1, j) > 0; j--) {
                 model.swap(j - 1, j);
             }
         }

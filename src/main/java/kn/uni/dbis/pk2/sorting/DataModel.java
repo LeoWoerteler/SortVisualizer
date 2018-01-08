@@ -11,14 +11,22 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Leo Woerteler &lt;leonard.woerteler@uni-konstanz.de&gt;
  */
 public class DataModel {
+
     /** Number of milliseconds to wait between operations. */
     private final AtomicInteger sleepTime;
+
     /** Distribution of wait time between comparisons and swaps. */
     private final AtomicInteger distribution;
+
     /** Values to sort. */
     private final int[] values;
+
+    /** Copy of values to sort. */
+    private int[] copy;
+
     /** Highlighted areas of interest. */
     private final List<int[]> areas = new ArrayList<>();
+
     /** Special value (row) to highlight. */
     private int specialValue = -1;
 
@@ -69,7 +77,6 @@ public class DataModel {
      *
      * @param newValue new highlighted value
      */
-    @Deprecated
     public synchronized void setSpecialValue(final int newValue) {
         this.specialValue = newValue;
     }
@@ -108,6 +115,54 @@ public class DataModel {
      */
     public int[] getValues() {
         return this.values;
+    }
+
+    /**
+     * Creates a copy of the data array.
+     *
+     * @return the copy
+     * @throws IllegalStateException if there already exists a copy
+     */
+    public synchronized int[] createCopy() {
+        if (this.copy != null) {
+            throw new IllegalStateException("copy already exists");
+        }
+        this.copy = this.values.clone();
+        return this.copy;
+    }
+
+    /**
+     * Checks if a copy has been created.
+     *
+     * @return {@code true} if a copy has been created, {@code false} otherwise
+     */
+    public synchronized boolean hasCopy() {
+        return this.copy != null;
+    }
+
+    /**
+     * Returns the copy of the data array.
+     *
+     * @return copy of the value array
+     * @throws IllegalStateException if no copy exists
+     */
+    public synchronized int[] getCopy() {
+        if (this.copy == null) {
+            throw new IllegalStateException("no copy was created");
+        }
+        return this.copy;
+    }
+
+    /**
+     * Destroys the copy.
+     *
+     * @throws IllegalStateException if no copy exists
+     */
+    public synchronized void destroyCopy() {
+        if (this.copy == null) {
+            throw new IllegalStateException("no copy exists");
+        }
+        this.copy = null;
     }
 
     /**
@@ -153,10 +208,23 @@ public class DataModel {
      * @throws InterruptedException if the thread was interrupted
      */
     public synchronized void swap(final int i, final int j) throws InterruptedException {
+        swap(values, i, j);
+    }
+
+    /**
+     * Swaps two values in the given array.
+     *
+     * @param array array to swap the values in
+     * @param i index of the first value to swap
+     * @param j index of the second value to swap
+     * @throws InterruptedException if the thread was interrupted
+     */
+    public synchronized void swap(final int[] array, final int i, final int j)
+            throws InterruptedException {
         if (i != j) {
-            final int temp = values[i];
-            values[i] = values[j];
-            values[j] = temp;
+            final int temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
             pause(true);
         }
     }
@@ -199,7 +267,20 @@ public class DataModel {
      * @throws InterruptedException if the sorting thread was interrupted
      */
     public void setValue(final int pos, final int value) throws InterruptedException {
-        values[pos] = value;
+        setValue(this.values, pos, value);
+    }
+
+    /**
+     * Sets a value in the given array.
+     *
+     * @param array array to set the value in
+     * @param pos position of the value to set
+     * @param value new value
+     * @throws InterruptedException if the sorting thread was interrupted
+     */
+    public void setValue(final int[] array, final int pos, final int value)
+            throws InterruptedException {
+        array[pos] = value;
         pause(true);
     }
 }

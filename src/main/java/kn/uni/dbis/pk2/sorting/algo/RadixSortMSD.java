@@ -45,7 +45,9 @@ public class RadixSortMSD implements Sorter {
             return;
         }
         final int[] values = model.getValues();
-        model.addArea(start, end);
+        if (end - start < model.getLength()) {
+            model.addArea(start, end);
+        }
         int l = start;
         int r = end;
         model.addArea(l, r);
@@ -66,6 +68,8 @@ public class RadixSortMSD implements Sorter {
             radixSort(model, lowerMask, start, r);
             radixSort(model, lowerMask, r, end);
         }
-        model.removeArea();
+        if (end - start < model.getLength()) {
+            model.removeArea();
+        }
     }
 }

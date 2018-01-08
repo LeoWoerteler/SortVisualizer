@@ -1,5 +1,7 @@
 package kn.uni.dbis.pk2.sorting.algo;
 
+import java.util.Arrays;
+
 import kn.uni.dbis.pk2.sorting.DataModel;
 import kn.uni.dbis.pk2.sorting.Sorter;
 
@@ -16,8 +18,9 @@ public final class MergeSortNatural implements Sorter {
         if (n < 2) {
             return;
         }
-        final int[] values = model.getValues();
-        final int[] copy = values.clone();
+        int[] in = model.getValues();
+        int[] out = model.createCopy();
+        Arrays.fill(out, -1);
         int start = -1;
         do {
             boolean asc = true;
@@ -26,35 +29,42 @@ public final class MergeSortNatural implements Sorter {
             while (end < n) {
                 start = end;
                 do {
-                    model.setSpecial(end);
+                    model.setSpecialValue(in[end]);
                     end++;
                     model.changeArea(0, start, end);
-                } while (end < n && model.compare(end - 1, end) <= 0);
-                while (end < n && model.compare(end - 1, end) >= 0) {
-                    model.setSpecial(end);
+                } while (end < n && model.compare(in, end - 1, end) <= 0);
+                while (end < n && model.compare(in, end - 1, end) >= 0) {
+                    model.setSpecialValue(in[end]);
                     end++;
                     model.changeArea(0, start, end);
                 }
                 model.setSpecial(-1);
-                merge(model, copy, start, end - 1, asc);
-                System.arraycopy(values, start, copy, start, end - start);
+                merge(model, in, out, start, end - 1, asc);
                 asc = !asc;
             }
             model.removeArea();
+            final int[] temp = in;
+            in = out;
+            out = temp;
         } while (start > 0);
+        if (in == model.getCopy()) {
+            move(model, in, out, 0, n);
+        }
+        model.destroyCopy();
     }
 
     /**
      * Merges an ascending and a descending run into one.
      *
      * @param model data model
-     * @param copy array to read from
+     * @param in array to read from
+     * @param out array to write to
      * @param lo low end
      * @param hi high end
      * @param asc flag for sorting in ascending order
      * @throws InterruptedException if the sorting thread was interrupted
      */
-    private static void merge(final DataModel model, final int[] copy,
+    private static void merge(final DataModel model, final int[] in, final int[] out,
             final int lo, final int hi, final boolean asc) throws InterruptedException {
         int k = asc ? lo : hi;
         final int c = asc ? 1 : -1;
@@ -62,14 +72,42 @@ public final class MergeSortNatural implements Sorter {
         int j = hi;
         model.addArea(lo, hi + 1);
         while (i <= j) {
-            if (model.compare(copy, i, j) <= 0) {
-                model.setValue(k, copy[i++]);
+            final int pos;
+            if (model.compare(in, i, j) <= 0) {
+                pos = i++;
             } else {
-                model.setValue(k, copy[j--]);
+                pos = j--;
             }
-            model.setSpecial(k);
+            final int val = in[pos];
+            in[pos] = -1;
+            model.setSpecialValue(val);
+            model.setValue(out, k, val);
             model.changeArea(0, i, j + 1);
             k += c;
+        }
+        model.removeArea();
+        model.setSpecial(-1);
+    }
+
+    /**
+     * Moves a range of values between arrays.
+     *
+     * @param model data model
+     * @param in input array
+     * @param out output array
+     * @param from start of the range
+     * @param to end of the range (exclusive)
+     * @throws InterruptedException if the sorting thread was interrupted
+     */
+    static void move(final DataModel model, final int[] in, final int[] out,
+            final int from, final int to) throws InterruptedException {
+        model.addArea(from, to);
+        for (int i = from; i < to; i++) {
+            final int val = in[i];
+            in[i] = -1;
+            model.setSpecialValue(val);
+            model.changeArea(0, i + 1, to);
+            model.setValue(out, i, val);
         }
         model.removeArea();
         model.setSpecial(-1);

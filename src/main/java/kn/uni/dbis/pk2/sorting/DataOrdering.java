@@ -124,10 +124,10 @@ public enum DataOrdering {
         @Override
         public void fill(final int[] values, final int max, final Random rng) {
             for (int i = 0; i < values.length; i++) {
-                final double x = 6 * Math.PI * i / values.length;
+                final double x = 6 * Math.PI * (i + 0.6 * (rng.nextDouble() - 0.5)) / values.length;
                 final double sin = Math.sin(x);
-                final double scaledSin = (sin + 1) * max / 2.0;
-                values[i] = Math.max(0, Math.min((int) Math.round(scaledSin), max - 1));
+                final double scaledSin = (sin + 1) * max / 2;
+                values[i] = Math.max(0, Math.min((int) scaledSin, max - 1));
             }
         }
     };
