@@ -9,17 +9,32 @@ import kn.uni.dbis.pk2.sorting.Sorter;
  * @author Leo Woerteler &lt;leonard.woerteler@uni-konstanz.de&gt;
  */
 public final class BubbleSort implements Sorter {
+
     @Override
     public void sort(final DataModel model) throws InterruptedException {
-        for (int n = model.getLength(), last = -1; n > 1; n = last) {
-            model.addArea(0, n);
-            for (int i = 1; i < n; i++) {
-                model.setSpecial(i - 1);
-                if (model.compare(i - 1, i) > 0) {
-                    last = i;
-                    model.swap(i - 1, i);
+        sort(model, 0, model.getLength());
+    }
+
+    /**
+     * Sorts a range of the given data model using Bubble Sort.
+     *
+     * @param model data model
+     * @param start start of the range (inclusive)
+     * @param end end of the range (exclusive)
+     * @throws InterruptedException if the sorting thread was interrupted
+     */
+    static void sort(final DataModel model, final int start, final int end)
+            throws InterruptedException {
+        for (int r = end, last; r - start > 1; r = last) {
+            model.addArea(start, r);
+            last = start;
+            for (int l = start + 1; l < r; l++) {
+                model.setSpecial(l - 1);
+                if (model.compare(l - 1, l) > 0) {
+                    last = l;
+                    model.swap(l - 1, l);
                 }
-                model.changeArea(0, i, n);
+                model.changeArea(0, l, r);
             }
             model.setSpecial(-1);
             model.removeArea();

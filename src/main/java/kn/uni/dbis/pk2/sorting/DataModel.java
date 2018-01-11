@@ -207,7 +207,7 @@ public class DataModel {
      * @param j index of the second value to swap
      * @throws InterruptedException if the thread was interrupted
      */
-    public synchronized void swap(final int i, final int j) throws InterruptedException {
+    public void swap(final int i, final int j) throws InterruptedException {
         swap(values, i, j);
     }
 
@@ -219,12 +219,14 @@ public class DataModel {
      * @param j index of the second value to swap
      * @throws InterruptedException if the thread was interrupted
      */
-    public synchronized void swap(final int[] array, final int i, final int j)
+    public void swap(final int[] array, final int i, final int j)
             throws InterruptedException {
         if (i != j) {
-            final int temp = array[i];
-            array[i] = array[j];
-            array[j] = temp;
+            synchronized (this) {
+                final int temp = array[i];
+                array[i] = array[j];
+                array[j] = temp;
+            }
             pause(true);
         }
     }
