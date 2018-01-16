@@ -10,11 +10,11 @@ import kn.uni.dbis.pk2.sorting.algo.InsertionSort;
 import kn.uni.dbis.pk2.sorting.algo.MergeSort;
 import kn.uni.dbis.pk2.sorting.algo.MergeSortNatural;
 import kn.uni.dbis.pk2.sorting.algo.MergeSortNaturalExtendedRuns;
-import kn.uni.dbis.pk2.sorting.algo.QuickSort3;
-import kn.uni.dbis.pk2.sorting.algo.QuickSortHybrid;
-import kn.uni.dbis.pk2.sorting.algo.QuickSortMedOfMed;
-import kn.uni.dbis.pk2.sorting.algo.QuickSortNaive;
-import kn.uni.dbis.pk2.sorting.algo.QuickSortRandom;
+import kn.uni.dbis.pk2.sorting.algo.QuickSort;
+import kn.uni.dbis.pk2.sorting.algo.QuickSort.PartitionStrategy;
+import kn.uni.dbis.pk2.sorting.algo.QuickSort.PivotStrategy;
+import kn.uni.dbis.pk2.sorting.algo.QuickSort.RecursionEnd;
+import kn.uni.dbis.pk2.sorting.algo.QuickSortIterative;
 import kn.uni.dbis.pk2.sorting.algo.RadixSortLSD;
 import kn.uni.dbis.pk2.sorting.algo.RadixSortMSD;
 import kn.uni.dbis.pk2.sorting.algo.SelectionSort;
@@ -52,22 +52,33 @@ public enum SortingAlgorithm {
     SHELLSORT("Shell Sort", ShellSort::new, true),
 
     /** The naive Quick Sort algorithm. */
-    QUICKSORT_NAIVE("Quick Sort", QuickSortNaive::new, false),
+    QUICKSORT_NAIVE("Quick Sort",
+            () -> new QuickSort(RecursionEnd.AT_MOST_ONE,
+                    PivotStrategy.FIRST, PartitionStrategy.NAIVE), false),
 
     /** The Quick Sort algorithm. */
-    QUICKSORT_LOG("Quick Sort (log space)", QuickSortRandom::new, false),
+    QUICKSORT_LOG("Quick Sort (log space)", () -> new QuickSortIterative(RecursionEnd.INSERTION_SORT,
+            PivotStrategy.MEDIAN_OF_THREE, PartitionStrategy.PIVOTS_LEFT), false),
 
     /** The Quick Sort algorithm. */
-    QUICKSORT_RANDOM("Quick Sort (random pivot)", QuickSortRandom::new, false),
+    QUICKSORT_RANDOM("Quick Sort (random pivot)",
+            () -> new QuickSort(RecursionEnd.AT_MOST_ONE,
+                    PivotStrategy.RANDOM, PartitionStrategy.PIVOTS_LEFT), false),
 
     /** The Quick Sort algorithm. */
-    QUICKSORT("Quick Sort (median of 3)", QuickSort3::new, false),
+    QUICKSORT_MED3("Quick Sort (median of 3)",
+            () -> new QuickSort(RecursionEnd.AT_MOST_ONE,
+                    PivotStrategy.MEDIAN_OF_THREE, PartitionStrategy.PIVOTS_MID), false),
 
     /** The Quick Sort algorithm. */
-    QUICKSORT_INSERT("Quick Sort (falls back to insertion)", QuickSortHybrid::new, false),
+    QUICKSORT_INSERT("Quick Sort (falls back to insertion)",
+            () -> new QuickSort(RecursionEnd.INSERTION_SORT,
+                    PivotStrategy.MEDIAN_OF_THREE, PartitionStrategy.PIVOTS_LEFT), false),
 
     /** The Quick Sort algorithm. */
-    QUICKSORT_MEDMED("Quick Sort (median of medians)", QuickSortMedOfMed::new, true),
+    QUICKSORT_MEDMED("Quick Sort (median of medians)",
+            () -> new QuickSort(RecursionEnd.INSERTION_SORT,
+                    PivotStrategy.MEDIAN_OF_MEDIANS, PartitionStrategy.PIVOTS_LEFT), true),
 
     /** The Merge Sort algorithm. */
     MERGESORT("Merge Sort", MergeSort::new, false),
