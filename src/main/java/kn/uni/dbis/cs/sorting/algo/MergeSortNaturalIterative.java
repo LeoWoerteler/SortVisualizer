@@ -86,7 +86,7 @@ public final class MergeSortNaturalIterative implements Sorter {
                             MergeSortNatural.move(model, in, out, off, mid);
                             onCopy = lastOnCopy;
                             final int[] temp = in;
-                            in = out;
+                            in = out; // TODO FIXME value out assigned to in is never used, why?
                             out = temp;
                         } else {
                             MergeSortNatural.move(model, out, in, mid, n);
@@ -117,7 +117,7 @@ public final class MergeSortNaturalIterative implements Sorter {
      * @param descOut flag for making the output run descending
      * @throws InterruptedException if the sorting thread was interrupted
      */
-    static void merge(final DataModel model, final boolean toCopy,
+    private static void merge(final DataModel model, final boolean toCopy,
             final int a0, final int a1, final int b0, final int b1,
             final boolean descOut) throws InterruptedException {
         final int add = descOut ? -1 : 1;

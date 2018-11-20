@@ -16,7 +16,7 @@ import kn.uni.dbis.cs.sorting.DataModel;
  *
  * @author Leo Woerteler &lt;leonard.woerteler@uni-konstanz.de&gt;
  */
-public class SortPanel extends JPanel {
+class SortPanel extends JPanel {
     /** Shade of gray for each background layer. */
     private static final Color TRANSPARENT_GRAY = new Color(0, 0, 0, 20);
 
@@ -35,7 +35,7 @@ public class SortPanel extends JPanel {
      * @param model initial data model
      * @param height upper bound on the values
      */
-    public SortPanel(final DataModel model, final int height) {
+    SortPanel(final DataModel model, final int height) {
         this.model = model;
         final int[] values = model.getValues();
         this.numRows = height;
@@ -49,7 +49,7 @@ public class SortPanel extends JPanel {
      *
      * @param newModel new model
      */
-    public void changeDataModel(final DataModel newModel) {
+    void changeDataModel(final DataModel newModel) {
         synchronized (model) {
             model = newModel;
         }

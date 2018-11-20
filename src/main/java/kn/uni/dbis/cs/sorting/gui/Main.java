@@ -24,7 +24,7 @@ import kn.uni.dbis.cs.sorting.SortingAlgorithm;
  *
  * @author Leo Woerteler &lt;leonard.woerteler@uni-konstanz.de&gt;
  */
-public final class Main {
+final class Main {
     /** Edge length of the squares representing values. */
     static final int CELL_SIZE = 5;
 
@@ -139,9 +139,7 @@ public final class Main {
         frame.setJMenuBar(menuBar);
 
         final JSlider slider = new JSlider(0, 100, sleepTime.get());
-        slider.addChangeListener(e -> {
-            sleepTime.set(100 - slider.getValue());
-        });
+        slider.addChangeListener(e -> sleepTime.set(100 - slider.getValue()));
         slider.setToolTipText("Number of milliseconds to wait between operations.");
         slider.setPaintLabels(true);
         final Hashtable<Integer, JLabel> labels = new Hashtable<>();
@@ -155,9 +153,7 @@ public final class Main {
         frame.add(slider, BorderLayout.SOUTH);
 
         final JSlider slider2 = new JSlider(JSlider.VERTICAL, 0, 100, sleepTime.get());
-        slider2.addChangeListener(e -> {
-            timeDistribution.set(slider2.getValue());
-        });
+        slider2.addChangeListener(e -> timeDistribution.set(slider2.getValue()));
         slider2.setToolTipText("Distribution of wait time between comparisons and swaps.");
         slider2.setPaintLabels(true);
         final Hashtable<Integer, JLabel> labels2 = new Hashtable<>();
@@ -233,8 +229,8 @@ public final class Main {
      * @param ordering data ordering
      * @return window title
      */
-    static String makeTitle(final SortingAlgorithm algo, final DataOrdering ordering) {
-        return "Sort Algorithm Visualizer  —  " + algo + "  vs.  " + ordering;
+    private static String makeTitle(final SortingAlgorithm algo, final DataOrdering ordering) {
+        return "Sort Algorithm Visualizer  —  " + algo + " vs. " + ordering;
     }
 
     /**
@@ -247,16 +243,13 @@ public final class Main {
     private static void setSorterThread(final AtomicReference<Thread> sorterThread,
             final SortingAlgorithm algo, final DataModel model) {
         final Sorter sorter = algo.newInstance();
-        final Thread thread = new Thread() {
-            @Override
-            public void run() {
-                try {
-                    sorter.sort(model);
-                } catch (final InterruptedException e) {
-                    // let the thread die
-                }
+        final Thread thread = new Thread(() -> {
+            try {
+                sorter.sort(model);
+            } catch (InterruptedException e) {
+                // let the thread die
             }
-        };
+        });
         thread.start();
         final Thread old = sorterThread.getAndSet(thread);
         if (old != null && old.isAlive()) {

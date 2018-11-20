@@ -13,7 +13,7 @@ import kn.uni.dbis.cs.sorting.Sorter;
 public class QuickSort implements Sorter {
 
     /** Limit for 'small' ranges, e.g. for falling back to insertion sort. */
-    public static final int SMALL_LIMIT = 7;
+    private static final int SMALL_LIMIT = 7;
 
     /** Strategies for ending the recursive descent. */
     public enum RecursionEnd {
@@ -21,7 +21,7 @@ public class QuickSort implements Sorter {
         /** Stops when there are fewer than two values in the range. */
         AT_MOST_ONE() {
             @Override
-            boolean end(final DataModel model, final int start, final int end) throws InterruptedException {
+            boolean end(final DataModel model, final int start, final int end) {
                 return end - start < 2;
             }
         },
@@ -56,8 +56,7 @@ public class QuickSort implements Sorter {
         /** Picks the first value in the range. */
         FIRST() {
             @Override
-            int calculatePivotPos(final Random rng, final DataModel model, final int start, final int end)
-                    throws InterruptedException {
+            int calculatePivotPos(final Random rng, final DataModel model, final int start, final int end) {
                 return start;
             }
         },
@@ -65,8 +64,7 @@ public class QuickSort implements Sorter {
         /** Picks a random value inside the range. */
         RANDOM() {
             @Override
-            int calculatePivotPos(final Random rng, final DataModel model, final int start, final int end)
-                    throws InterruptedException {
+            int calculatePivotPos(final Random rng, final DataModel model, final int start, final int end) {
                 return start + rng.nextInt(end - start);
             }
         },
