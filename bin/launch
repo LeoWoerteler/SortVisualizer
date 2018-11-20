@@ -1,0 +1,4 @@
+#!/bin/sh
+JLINK_VM_OPTIONS=-Xdock:name="SortVisualizer"
+DIR=`dirname $0`
+${DIR}/../runtime/bin/java $JLINK_VM_OPTIONS -m kn.uni.dbis.cs.sorting/kn.uni.dbis.cs.sorting.gui.Main $@
