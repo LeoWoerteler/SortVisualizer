@@ -22,19 +22,19 @@ public class QuickSortIterative extends QuickSort {
     }
 
     @Override
-    void sort(final DataModel model, final int start, final int end) throws InterruptedException {
+    void sort(final DataModel model, final int start, final int end, final int depth) throws InterruptedException {
         model.addArea(start, end);
         int from = start;
         int to = end;
-        while (!this.end(model, from, to)) {
+        while (!this.end(model, from, to, depth)) {
             model.swap(from, this.calculatePivotPos(model, from, to));
             final int[] lr = this.partition(model, from, to);
             // sort the smaller part recursively
             if (lr[0] - from <= to - lr[1]) {
-                sort(model, from, lr[0]);
+                sort(model, from, lr[0], depth + 1);
                 from = lr[1];
             } else {
-                sort(model, lr[1], to);
+                sort(model, lr[1], to, depth + 1);
                 to = lr[0];
             }
             model.changeArea(0, from, to);
