@@ -1,5 +1,6 @@
 package kn.uni.dbis.cs.sorting;
 
+import java.util.Arrays;
 import java.util.Random;
 
 /**
@@ -129,6 +130,12 @@ public enum DataOrdering {
                 final double scaledSin = (sin + 1) * max / 2;
                 values[i] = Math.max(0, Math.min((int) scaledSin, max - 1));
             }
+        }
+    },
+    ONLY_SAME("Random Only Same") {
+        @Override
+        public void fill(int[] values, int max, Random rng) {
+            Arrays.fill(values, rng.nextInt(max));
         }
     };
 
