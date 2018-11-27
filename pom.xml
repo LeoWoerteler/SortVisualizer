@@ -26,6 +26,20 @@
           <target>${java.version}</target>
         </configuration>
       </plugin>
+      <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.1.0</version>
+          <configuration>
+              <archive>
+                  <index>true</index>
+                  <manifest>
+                      <mainClass>kn.uni.dbis.pk2.sorting.gui.Main</mainClass>
+                      <addClasspath>true</addClasspath>
+                  </manifest>
+              </archive>
+          </configuration>
+      </plugin>
     </plugins>
   </build>
 </project>
