@@ -1,12 +1,15 @@
 package kn.uni.dbis.pk2.sorting.gui;
 
 import java.awt.BorderLayout;
+import java.util.Hashtable;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JRadioButtonMenuItem;
@@ -41,10 +44,10 @@ public final class Main {
     }
 
     /**
-     * 
+     *
      * @param args unused
      */
-    public static void main(final String[] args) {
+    public static void main(final String[] args) throws ClassNotFoundException, javax.swing.UnsupportedLookAndFeelException, InstantiationException, IllegalAccessException {
         final int numValues;
         final int max;
         if (args.length > 0) {
@@ -90,19 +93,22 @@ public final class Main {
         final DataModel model = makeModel(rng, numValues, max, ordering.get(), sleepTime, timeDistribution);
 
         // initialize the GUI
-        final JFrame frame = new JFrame(makeTitle(algorithm.get(), ordering.get()));
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        System.setProperty("apple.laf.useScreenMenuBar", "true");
+        System.setProperty("com.apple.mrj.application.apple.menu.about.name", "SortVisualizer");
+        javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+        final javax.swing.JFrame frame = new javax.swing.JFrame(makeTitle(algorithm.get(), ordering.get()));
+        frame.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
         final SortPanel sortPanel = new SortPanel(model, max);
         frame.add(sortPanel, BorderLayout.CENTER);
-        final JMenuBar menuBar = new JMenuBar();
-        final JMenu sortAlgorithms = new JMenu("Sort Algorithm");
-        final ButtonGroup algos = new ButtonGroup();
+        final javax.swing.JMenuBar menuBar = new javax.swing.JMenuBar();
+        final javax.swing.JMenu sortAlgorithms = new javax.swing.JMenu("Sort Algorithm");
+        final javax.swing.ButtonGroup algos = new javax.swing.ButtonGroup();
         boolean newGroup = false;
         for (final SortingAlgorithm algo : SortingAlgorithm.values()) {
             if (newGroup) {
                 sortAlgorithms.addSeparator();
             }
-            final JRadioButtonMenuItem algoItem = new JRadioButtonMenuItem(algo.toString());
+            final javax.swing.JRadioButtonMenuItem algoItem = new javax.swing.JRadioButtonMenuItem(algo.toString());
             algoItem.setSelected(algo == algorithm.get());
             algoItem.addActionListener(l -> {
                 algorithm.set(algo);
@@ -132,18 +138,38 @@ public final class Main {
             dataOrder.add(dOrdItem);
         }
         menuBar.add(dataOrder);
-
         frame.setJMenuBar(menuBar);
+
         final JSlider slider = new JSlider(0, 100, sleepTime.get());
         slider.addChangeListener(e -> {
             sleepTime.set(100 - slider.getValue());
         });
+        slider.setToolTipText("Number of milliseconds to wait between operations.");
+        slider.setPaintLabels(true);
+        final Hashtable<Integer, JLabel> labels = new Hashtable<>();
+        final JLabel slow = new JLabel("SLOW");
+        slow.setBorder(BorderFactory.createEmptyBorder(0, 5, 5, 0));
+        labels.put(0, slow);
+        final JLabel fast = new JLabel("FAST");
+        fast.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 5));
+        labels.put(100, fast);
+        slider.setLabelTable(labels);
         frame.add(slider, BorderLayout.SOUTH);
-        final JSlider slider2 = new JSlider(0, 100, sleepTime.get());
-        slider2.setOrientation(SwingConstants.VERTICAL);
+
+        final JSlider slider2 = new JSlider(JSlider.VERTICAL, 0, 100, sleepTime.get());
         slider2.addChangeListener(e -> {
             timeDistribution.set(slider2.getValue());
         });
+        slider2.setToolTipText("Distribution of wait time between comparisons and swaps.");
+        slider2.setPaintLabels(true);
+        final Hashtable<Integer, JLabel> labels2 = new Hashtable<>();
+        final JLabel swp = new JLabel("<html>SLOW<br/>SWAP</html>");
+        swp.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
+        labels2.put(0, swp);
+        final JLabel cmp = new JLabel("<html>SLOW<br/>COMP</html>");
+        cmp.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
+        labels2.put(100, cmp);
+        slider2.setLabelTable(labels2);
         frame.add(slider2, BorderLayout.EAST);
         frame.pack();
         frame.setResizable(true);
@@ -178,7 +204,7 @@ public final class Main {
      * @return data model
      */
     private static DataModel makeModel(final Random rng, final int numValues, final int max,
-            final DataOrdering ordering, final AtomicInteger sleepTime, final AtomicInteger timeDistribution) {
+                                       final DataOrdering ordering, final AtomicInteger sleepTime, final AtomicInteger timeDistribution) {
         final int[] newArray = new int[numValues];
         ordering.fill(newArray, max, rng);
         return new DataModel(newArray, sleepTime, timeDistribution);
@@ -193,7 +219,7 @@ public final class Main {
      * @param newModel new data model to sort
      */
     private static void restartSorting(final AtomicReference<Thread> sorterThread,
-            final SortPanel sortPanel, final SortingAlgorithm algo, final DataModel newModel) {
+                                       final SortPanel sortPanel, final SortingAlgorithm algo, final DataModel newModel) {
         final Thread old = sorterThread.get();
         if (old != null) {
             old.interrupt();
@@ -221,7 +247,7 @@ public final class Main {
      * @param model data model to sort
      */
     private static void setSorterThread(final AtomicReference<Thread> sorterThread,
-            final SortingAlgorithm algo, final DataModel model) {
+                                        final SortingAlgorithm algo, final DataModel model) {
         final Sorter sorter = algo.newInstance();
         final Thread thread = new Thread() {
             @Override
