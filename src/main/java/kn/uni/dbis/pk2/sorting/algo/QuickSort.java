@@ -21,7 +21,7 @@ public class QuickSort implements Sorter {
         /** Stops when there are fewer than two values in the range. */
         AT_MOST_ONE() {
             @Override
-            boolean end(final DataModel model, final int start, final int end) throws InterruptedException {
+            boolean end(final DataModel model, final int start, final int end, final int depth) throws InterruptedException {
                 return end - start < 2;
             }
         },
@@ -29,9 +29,24 @@ public class QuickSort implements Sorter {
         /** Sorts ranges of length at most {@link #SMALL_LIMIT} using Insertion Sort. */
         INSERTION_SORT() {
             @Override
-            boolean end(final DataModel model, final int start, final int end) throws InterruptedException {
+            boolean end(final DataModel model, final int start, final int end, final int depth) throws InterruptedException {
                 if (end - start <= SMALL_LIMIT) {
                     InsertionSort.sort(model, start, end);
+                    return true;
+                }
+                return false;
+            }
+        },
+        /** Sorts using Heap Sort when depth reaches a certain value, as used in <a href="http://www.cs.rpi.edu/~musser/gp/introsort.ps">David Musser's IntroSort</a>. */
+        MAX_LOG_DEPTH() {
+            @Override
+            boolean end(final DataModel model, final int start, final int end, final int depth) throws InterruptedException {
+                if (end - start < 2) {
+                    return true;
+                }
+                // 2 * log_2 n
+                if (depth == 2 * (31 - Integer.numberOfLeadingZeros(model.getLength()))) {
+                    HeapSort.sort(model, start, end);
                     return true;
                 }
                 return false;
@@ -44,10 +59,11 @@ public class QuickSort implements Sorter {
          * @param model data model
          * @param start start of the range to be sorted
          * @param end end of the range to be sorted (exclusive)
+         * @param depth current depth of recursive descent
          * @return {@code true} if no more recursion should occur, {@code false} otherwise
          * @throws InterruptedException if the sorting thread was interrupted
          */
-        abstract boolean end(DataModel model, int start, int end) throws InterruptedException;
+        abstract boolean end(DataModel model, int start, int end, final int depth) throws InterruptedException;
     }
 
     /** Strategies for picking a pivot value. */
@@ -291,7 +307,7 @@ public class QuickSort implements Sorter {
 
     @Override
     public final void sort(final DataModel model) throws InterruptedException {
-        sort(model, 0, model.getLength());
+        sort(model, 0, model.getLength(), 0);
     }
 
     /**
@@ -303,8 +319,8 @@ public class QuickSort implements Sorter {
      * @return {@code true} if no more recursion should occur, {@code false} otherwise
      * @throws InterruptedException if the sorting thread was interrupted
      */
-    final boolean end(final DataModel model, final int start, final int end) throws InterruptedException {
-        return this.endCondition.end(model, start, end);
+    final boolean end(final DataModel model, final int start, final int end, final int depth) throws InterruptedException {
+        return this.endCondition.end(model, start, end, depth);
     }
 
     /**
@@ -356,15 +372,15 @@ public class QuickSort implements Sorter {
      * @param end end of the range to sort (exclusive)
      * @throws InterruptedException if the sorting thread was interrupted
      */
-    void sort(final DataModel model, final int start, final int end) throws InterruptedException {
-        if (this.end(model, start, end)) {
+    void sort(final DataModel model, final int start, final int end, final int depth) throws InterruptedException {
+        if (this.end(model, start, end, depth)) {
             return;
         }
         model.addArea(start, end);
         model.swap(start, this.calculatePivotPos(model, start, end));
         final int[] lr = this.partition(model, start, end);
-        sort(model, start, lr[0]);
-        sort(model, lr[1], end);
+        sort(model, start, lr[0], depth + 1);
+        sort(model, lr[1], end, depth + 1);
         model.removeArea();
     }
 }
