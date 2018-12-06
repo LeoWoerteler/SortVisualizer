@@ -1,5 +1,6 @@
 package kn.uni.dbis.pk2.sorting;
 
+import java.util.Arrays;
 import java.util.Random;
 
 /**
@@ -25,6 +26,14 @@ public enum DataOrdering {
             for (int i = 0; i < values.length; i++) {
                 values[i] = rng.nextInt(max) & ~0x7;
             }
+        }
+    },
+
+    /** All values are identical. */
+    RANOM_ONLY_DUP("Random Value (all duplicates)") {
+        @Override
+        public void fill(final int[] values, final int max, final Random rng) {
+            Arrays.fill(values, rng.nextInt(max));
         }
     },
 
