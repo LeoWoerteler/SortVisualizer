@@ -12,7 +12,19 @@ public final class HeapSort implements Sorter {
 
     @Override
     public void sort(final DataModel model) throws InterruptedException {
-        final int n = model.getLength();
+        sort(model, 0, model.getLength());
+    }
+
+    /**
+     * Sorts the given range of the data model using Heap Sort.
+     *
+     * @param model data model
+     * @param start start of the range to sort
+     * @param end end of the range to sort
+     * @throws InterruptedException id the sorting thread is interrupted
+     */
+    public static void sort(final DataModel model, final int start, final int end) throws InterruptedException {
+        final int n = end - start;
         final int lastParent = (n - 1) / 2;
         for (int i = lastParent; i >= 0; i--) {
             model.addArea(i, n);

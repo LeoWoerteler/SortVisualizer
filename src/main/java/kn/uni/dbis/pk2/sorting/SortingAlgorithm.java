@@ -78,7 +78,15 @@ public enum SortingAlgorithm {
     /** The Quick Sort algorithm. */
     QUICKSORT_MEDMED("Quick Sort (median of medians)",
             () -> new QuickSort(RecursionEnd.INSERTION_SORT,
-                    PivotStrategy.MEDIAN_OF_MEDIANS, PartitionStrategy.PIVOTS_LEFT), true),
+                    PivotStrategy.MEDIAN_OF_MEDIANS, PartitionStrategy.PIVOTS_LEFT), false),
+
+    /** The Intro Sort algorithm, a variant of QuickSort that falls back to HeapSort at a certain recursive depth.
+     * See <a href="http://www.cs.rpi.edu/~musser/gp/introsort.ps">David Musser's IntroSort</a>.
+     */
+    INTROSORT("Quick Sort (IntroSort)",
+            () -> new QuickSort(QuickSort.RecursionEnd.MAX_LOG_DEPTH,
+                    QuickSort.PivotStrategy.MEDIAN_OF_THREE,
+                    QuickSort.PartitionStrategy.PIVOTS_MID), true),
 
     /** The Merge Sort algorithm. */
     MERGESORT("Merge Sort", MergeSort::new, false),
